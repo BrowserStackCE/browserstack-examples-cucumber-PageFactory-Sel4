@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Parallel Suite BDD" verbose="1" parallel="tests">
+    <parameter name="config" value="Run_Parallel_Test/parallel.conf.json"/>
+    <listeners>
+        <listener class-name="com.qa.util.SuiteAlterer"/>
+    </listeners>
+    <test name="BSTestEnv1">
+        <parameter name="environment" value="env1"/>
+        <classes>
+            <class name="Runner.CucumberTest"/>
+        </classes>
+    </test>
+    <test name="BSTestEnv2">
+        <parameter name="environment" value="env2"/>
+        <classes>
+            <class name="Runner.CucumberTest"/>
+        </classes>
+    </test>
+    <test name="BSTestEnv3">
+        <parameter name="environment" value="env3"/>
+        <classes>
+            <class name="Runner.CucumberTest"/>
+        </classes>
+    </test>
+    <test name="BSTestEnv4">
+        <parameter name="environment" value="env4"/>
+        <classes>
+            <class name="Runner.CucumberTest"/>
+        </classes>
+    </test>
+</suite>
