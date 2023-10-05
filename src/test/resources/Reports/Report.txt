@@ -1,0 +1,3 @@
+Reports will be generated based on timestamp and will have pdf and html formats.
+The screenshots are attached in the same directory and can be zipped and shared over email without losing the screenshots in the folder.
+These configurations can be changed from the extent.properties file.
