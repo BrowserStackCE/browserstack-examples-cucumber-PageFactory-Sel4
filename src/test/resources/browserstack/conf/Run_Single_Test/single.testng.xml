@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="BDD Single" verbose="1" parallel="methods">
+    <parameter name="config" value="Run_Single_Test/single.conf.json"/>
+    <listeners>
+        <listener class-name="com.qa.util.SuiteAlterer"/>
+    </listeners>
+    <test name="BDD Single 1">
+        <parameter name="environment" value="env"/>
+        <classes>
+            <class name="Runner.CucumberTest"/>
+        </classes>
+    </test>
+</suite>
