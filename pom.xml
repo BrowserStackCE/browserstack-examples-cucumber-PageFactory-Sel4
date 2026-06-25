@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.BrowserStack</groupId>
@@ -9,14 +6,13 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <cucumber.version>7.2.2</cucumber.version>
+        <cucumber.version>7.3.0</cucumber.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <surefire.plugin.version>3.0.0-M5</surefire.plugin.version>
         <testng.version>7.4.0</testng.version>
         <surefire.version>3.0.0-M5</surefire.version>
-        <browser-type></browser-type>
-        <suiteXmlFile></suiteXmlFile>
         <Application_url>https://bstackdemo.com/</Application_url>
     </properties>
 
@@ -47,17 +43,18 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>4.1.0</version>
+            <version>4.22.0</version>
         </dependency>
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
-            <version>5.0.3</version>
+            <version>LATEST</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
+            <version>LATEST</version>
         </dependency>
         <dependency>
             <groupId>tech.grasshopper</groupId>
@@ -79,6 +76,11 @@
             <artifactId>okhttp</artifactId>
             <version>5.0.0-alpha.10</version>
         </dependency>
+        <dependency>
+          <groupId>com.browserstack</groupId>
+          <artifactId>browserstack-java-sdk</artifactId>
+          <version>LATEST</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -90,13 +92,25 @@
                 <configuration>
                     <suiteXmlFiles>
                         <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
-                    </suiteXmlFiles>
+                    </suiteXmlFiles><argLine>-javaagent:"${com.browserstack:browserstack-java-sdk:jar}"</argLine>
                     <systemProperties>
                         <browser-type>${browser-type}</browser-type>
                         <Application_url>${Application_url}</Application_url>
                     </systemProperties>
                 </configuration>
             </plugin>
+            <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>getClasspathFilenames</id>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
         </plugins>
     </build>
 
@@ -104,7 +118,7 @@
         <profile>
             <id>scenario-onprem</id>
             <properties>
-                <browser-type>chrome</browser-type>
+                <browser-type>firefox</browser-type>
                 <suiteXmlFile>testng.xml</suiteXmlFile>
             </properties>
         </profile>
@@ -116,26 +130,11 @@
             </properties>
         </profile>
         <profile>
-            <id>suite-cross-bs</id>
-            <properties>
-                <browser-type>remote</browser-type>
-                <suiteXmlFile>src/test/resources/browserstack/conf/Run_Parallel_Test/parallel.testng.xml</suiteXmlFile>
-            </properties>
-        </profile>
-        <profile>
             <id>local-bs</id>
             <properties>
                 <browser-type>remote</browser-type>
                 <Application_url>http://localhost:3000/</Application_url>
-                <suiteXmlFile>src/test/resources/browserstack/conf/Run_Local_Test/local.testng.xml</suiteXmlFile>
-            </properties>
-        </profile>
-        <profile>
-            <id>local-cross-bs</id>
-            <properties>
-                <browser-type>remote</browser-type>
-                <Application_url>http://localhost:3000/</Application_url>
-                <suiteXmlFile>src/test/resources/browserstack/conf/Run_Local_Parallel/localParallel.testng.xml</suiteXmlFile>
+                <suiteXmlFile>src/test/resources/browserstack/conf/Run_Parallel_Test/parallel.testng.xml</suiteXmlFile>
             </properties>
         </profile>
     </profiles>

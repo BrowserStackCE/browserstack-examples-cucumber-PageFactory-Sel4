@@ -9,7 +9,6 @@
     "sessionName": "BS Suite",
     "debug": "true",
     "networkLogs": "true",
-    "seleniumVersion": "4.0.0",
     "consoleLogs": "errors"
   },
 
