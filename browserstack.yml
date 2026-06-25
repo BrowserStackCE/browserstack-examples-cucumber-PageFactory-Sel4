@@ -31,17 +31,17 @@ platforms:
   - os: OS X
     osVersion: Big Sur
     browserName: Chrome
-    browserVersion: 131.0
+    browserVersion: latest
   - os: Windows
     osVersion: 10
     browserName: Edge
-    browserVersion: 131.0
+    browserVersion: latest
   - deviceName: Samsung Galaxy S2*
     browserName: chrome # Try 'samsung' for Samsung browser
-    osVersion: "[12131415]"
+    #osVersion: "[12131415]"
   - deviceName: iPhone 1* 
     browserName: safari
-    osVersion: "[15161718]"
+    #osVersion: "[15161718]"
 # =======================
 # Parallels per Platform
 # =======================
