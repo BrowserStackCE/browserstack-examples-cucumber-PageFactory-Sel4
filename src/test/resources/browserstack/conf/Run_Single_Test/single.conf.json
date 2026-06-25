@@ -1,0 +1,25 @@
+{
+  "server": "hub-cloud.browserstack.com",
+  "user": "",
+  "key": "",
+
+  "capabilities": {
+    "projectName": "Cucumber Java",
+    "buildName": "BStackDemo BDD",
+    "sessionName": "BS Suite",
+    "debug": "true",
+    "networkLogs": "true",
+    "consoleLogs": "errors"
+  },
+
+  "environments": {
+    "env": {
+      "browser": "Chrome",
+      "browser_version": "latest",
+      "envOptions": {
+        "os": "OS X",
+        "osVersion": "Monterey"
+      }
+    }
+  }
+}
