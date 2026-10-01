@@ -43,52 +43,20 @@ echo "============================================================"
 # ── STEP 1: Fetch 5 random manual (not_automated) test cases from TM ─────────
 echo ""
 
-# If TM_PROJECT_ID is numeric (e.g. 3635057), resolve it to PR-XX identifier
-if echo "$TM_PROJECT_ID" | grep -qE '^[0-9]+$'; then
-  echo "  Resolving numeric project ID $TM_PROJECT_ID to PR-XX identifier..."
-  PR_IDENTIFIER=$(python3 - "$TM_PROJECT_ID" "$BS_USERNAME" "$BS_ACCESS_KEY" <<'PYEOF'
-import sys, json, subprocess
-numeric_id, username, access_key = sys.argv[1], sys.argv[2], sys.argv[3]
-page = 1
-while True:
-    result = subprocess.run([
-        "curl", "-s", "-u", f"{username}:{access_key}",
-        f"https://test-management.browserstack.com/api/v2/projects?per_page=100&page={page}"
-    ], capture_output=True, text=True)
-    try:
-        data = json.loads(result.stdout)
-    except Exception:
-        break
-    if isinstance(data, dict) and "message" in data:
-        print(f"API Error: {data.get('message')}", file=sys.stderr)
-        break
-    projects = data.get("projects", [])
-    if not projects:
-        break
-    for p in projects:
-        url = p.get("urls", {}).get("self", "")
-        if url.endswith("/" + numeric_id):
-            print(p["identifier"])
-            sys.exit(0)
-    info = data.get("info", {})
-    if not info.get("next"):
-        break
-    page += 1
-PYEOF
-)
-  if [ -n "$PR_IDENTIFIER" ]; then
-    TM_PROJECT_ID="$PR_IDENTIFIER"
-    echo "  Resolved to: $TM_PROJECT_ID"
-  else
-    echo "  Could not resolve numeric ID, using as-is: $TM_PROJECT_ID"
-  fi
+# Use TM_PROJECT_IDENTIFIER (PR-XX format) if set, otherwise use TM_PROJECT_ID
+# In Azure DevOps, set TM_PROJECT_IDENTIFIER=PR-23 as a pipeline variable
+TM_API_PROJECT="${TM_PROJECT_IDENTIFIER:-$TM_PROJECT_ID}"
+if echo "$TM_API_PROJECT" | grep -qE '^[0-9]+$'; then
+  echo "  WARNING: TM_API_PROJECT '$TM_API_PROJECT' looks like a numeric ID."
+  echo "  The TM API requires PR-XX format. Set TM_PROJECT_IDENTIFIER=PR-23 in your pipeline variables."
+  echo "  Attempting to use as-is (may fail)..."
 fi
 
-echo "[1/4] Fetching 5 random manual test cases from Test Management (project: $TM_PROJECT_ID)..."
+echo "[1/4] Fetching 5 random manual test cases from Test Management (project: $TM_API_PROJECT)..."
 
 TM_RESPONSE=$(curl -s \
   -u "$BS_USERNAME:$BS_ACCESS_KEY" \
-  "https://test-management.browserstack.com/api/v2/projects/$TM_PROJECT_ID/test-cases?automation_status=not_automated&per_page=100")
+  "https://test-management.browserstack.com/api/v2/projects/$TM_API_PROJECT/test-cases?automation_status=not_automated&per_page=100")
 
 # Pick 5 random IDs from the returned list
 TC_IDS=$(echo "$TM_RESPONSE" | python3 -c "
