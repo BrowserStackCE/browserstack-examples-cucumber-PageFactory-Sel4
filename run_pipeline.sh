@@ -24,6 +24,90 @@ fi
 BS_USERNAME="${BS_USERNAME:-$BROWSERSTACK_USERNAME}"
 BS_ACCESS_KEY="${BS_ACCESS_KEY:-$BROWSERSTACK_ACCESS_KEY}"
 
+# ── DIAGNOSTICS: Print all expected env vars (mask secrets) ───────────────────
+echo ""
+echo "============================================================"
+echo " 🔍 ENVIRONMENT DIAGNOSTICS"
+echo "============================================================"
+echo ""
+echo "── Credentials ──────────────────────────────────────────────"
+if [ -n "$BS_USERNAME" ]; then
+  echo "  BS_USERNAME              = $BS_USERNAME  ✅"
+else
+  echo "  BS_USERNAME              = (NOT SET)  ❌"
+fi
+if [ -n "$BS_ACCESS_KEY" ]; then
+  echo "  BS_ACCESS_KEY            = ${BS_ACCESS_KEY:0:4}****${BS_ACCESS_KEY: -4}  ✅"
+else
+  echo "  BS_ACCESS_KEY            = (NOT SET)  ❌"
+fi
+if [ -n "$BROWSERSTACK_USERNAME" ]; then
+  echo "  BROWSERSTACK_USERNAME    = $BROWSERSTACK_USERNAME  ✅ (fallback source)"
+else
+  echo "  BROWSERSTACK_USERNAME    = (NOT SET)"
+fi
+if [ -n "$BROWSERSTACK_ACCESS_KEY" ]; then
+  echo "  BROWSERSTACK_ACCESS_KEY  = ${BROWSERSTACK_ACCESS_KEY:0:4}****${BROWSERSTACK_ACCESS_KEY: -4}  ✅ (fallback source)"
+else
+  echo "  BROWSERSTACK_ACCESS_KEY  = (NOT SET)"
+fi
+echo ""
+echo "── Test Management ──────────────────────────────────────────"
+if [ -n "$TM_PROJECT_IDENTIFIER" ]; then
+  echo "  TM_PROJECT_IDENTIFIER    = $TM_PROJECT_IDENTIFIER  ✅"
+else
+  echo "  TM_PROJECT_IDENTIFIER    = (NOT SET)  ⚠️  (preferred: PR-XX format)"
+fi
+if [ -n "$TM_PROJECT_ID" ]; then
+  echo "  TM_PROJECT_ID            = $TM_PROJECT_ID  ✅"
+else
+  echo "  TM_PROJECT_ID            = (NOT SET)"
+fi
+if [ -n "$TM_PROJECT_NAME" ]; then
+  echo "  TM_PROJECT_NAME          = $TM_PROJECT_NAME  ✅"
+else
+  echo "  TM_PROJECT_NAME          = (NOT SET)  ⚠️  (used in browserstack.yml projectName)"
+fi
+echo ""
+echo "── Project / Build ──────────────────────────────────────────"
+echo "  JAVA_HOME                = ${JAVA_HOME:-(NOT SET)}"
+echo "  MAVEN_HOME               = ${MAVEN_HOME:-(NOT SET)}"
+echo "  PATH (java)              = $(command -v java 2>/dev/null || echo 'java not found ❌')"
+echo "  PATH (mvn)               = $(command -v mvn 2>/dev/null || echo 'mvn not found ❌')"
+echo "  PATH (python3)           = $(command -v python3 2>/dev/null || echo 'python3 not found ❌')"
+echo "  PATH (curl)              = $(command -v curl 2>/dev/null || echo 'curl not found ❌')"
+echo ""
+echo "── .env file ────────────────────────────────────────────────"
+if [ -f "$SCRIPT_DIR_EARLY/.env" ]; then
+  echo "  .env file                = FOUND at $SCRIPT_DIR_EARLY/.env  ✅"
+else
+  echo "  .env file                = NOT FOUND (relying on pipeline env vars)"
+fi
+echo ""
+echo "── API Connectivity Check ───────────────────────────────────"
+if [ -n "$BS_USERNAME" ] && [ -n "$BS_ACCESS_KEY" ]; then
+  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+    -u "$BS_USERNAME:$BS_ACCESS_KEY" \
+    "https://api.browserstack.com/automate/plan.json")
+  if [ "$HTTP_STATUS" = "200" ]; then
+    echo "  BrowserStack Automate API = HTTP $HTTP_STATUS  ✅"
+  else
+    echo "  BrowserStack Automate API = HTTP $HTTP_STATUS  ❌ (check credentials / network)"
+  fi
+  TM_HTTP=$(curl -s -o /dev/null -w "%{http_code}" \
+    -u "$BS_USERNAME:$BS_ACCESS_KEY" \
+    "https://test-management.browserstack.com/api/v2/projects")
+  if [ "$TM_HTTP" = "200" ]; then
+    echo "  Test Management API       = HTTP $TM_HTTP  ✅"
+  else
+    echo "  Test Management API       = HTTP $TM_HTTP  ❌ (check credentials / network)"
+  fi
+else
+  echo "  API checks SKIPPED — credentials not set"
+fi
+echo "============================================================"
+echo ""
+
 if [ -z "$BS_USERNAME" ] || [ -z "$BS_ACCESS_KEY" ]; then
   echo "ERROR: Missing BrowserStack credentials. Provide a .env file or ensure BS_USERNAME/BS_ACCESS_KEY (or BROWSERSTACK_USERNAME/BROWSERSTACK_ACCESS_KEY) environment variables are set."
   exit 1

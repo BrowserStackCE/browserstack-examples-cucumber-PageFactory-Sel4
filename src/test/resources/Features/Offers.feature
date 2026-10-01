@@ -4,7 +4,7 @@
  @test @regression
   Feature: Offers for user in Mumbai area
     @offers
-    Scenario Outline: TC-7490 Signed in user can see promotional offers under Offers for Mumbai Location
+    Scenario Outline: TC-7482 Signed in user can see promotional offers under Offers for Mumbai Location
       Given User is on home page
       When User clicks on sign in link
       And User enters <username> and <password> and clicks on sign in
