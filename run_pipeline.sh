@@ -32,23 +32,24 @@ echo "============================================================"
 echo " BrowserStack SDK Pipeline — Local Run"
 echo "============================================================"
 
-# ── STEP 1: Fetch 5 not_automated test cases from TM ─────────────────────────
+# ── STEP 1: Fetch 5 random manual (not_automated) test cases from TM ─────────
 echo ""
-echo "[1/4] Fetching matched test cases from Test Management (project: $TM_PROJECT_ID)..."
+echo "[1/4] Fetching 5 random manual test cases from Test Management (project: $TM_PROJECT_ID)..."
 
 TM_RESPONSE=$(curl -s \
   -u "$BS_USERNAME:$BS_ACCESS_KEY" \
-  "https://test-management.browserstack.com/api/v2/projects/$TM_PROJECT_ID/test-cases?id=TC-7602,TC-7603,TC-7604,TC-7605,TC-7606")
+  "https://test-management.browserstack.com/api/v2/projects/$TM_PROJECT_ID/test-cases?automation_status=not_automated&per_page=100")
 
-# Extract identifiers (TC-XXXX)
+# Pick 5 random IDs from the returned list
 TC_IDS=$(echo "$TM_RESPONSE" | python3 -c "
-import sys, json
+import sys, json, random
 data = json.load(sys.stdin)
 tcs = data.get('test_cases', [])
 if not tcs:
     print('ERROR: No test cases returned', file=sys.stderr)
     sys.exit(1)
-ids = [tc['identifier'] for tc in tcs[:5]]
+sample = random.sample(tcs, min(5, len(tcs)))
+ids = [tc['identifier'] for tc in sample]
 print(' '.join(ids))
 ")
 
