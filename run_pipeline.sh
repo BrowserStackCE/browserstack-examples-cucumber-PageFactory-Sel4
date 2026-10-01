@@ -1,8 +1,8 @@
 #!/bin/bash
 # =============================================================================
 # BrowserStack SDK Pipeline Script
-# Replicates the Azure DevOps pipeline locally:
-#   1. Fetch 5 matched test cases from Test Management (PR-23) by TC ID
+# Replicates the Azure DevOps pipeline locally / on CI:
+#   1. Fetch 5 matched test cases from Test Management by TC ID
 #   2. Replace TC IDs in feature files
 #   3. Update credentials + projectName in browserstack.yml
 #   4. Trigger Maven build (BrowserStack SDK)
@@ -18,11 +18,17 @@ if [ -f "$SCRIPT_DIR_EARLY/.env" ]; then
   source "$SCRIPT_DIR_EARLY/.env"
   set +a
   echo "  Loaded credentials from .env"
-elif [ -n "$BS_USERNAME" ] && [ -n "$BS_ACCESS_KEY" ]; then
-  echo "  Using existing environment variables for BrowserStack credentials"
-else
-  echo "ERROR: Missing credentials. Provide a .env file or set BS_USERNAME & BS_ACCESS_KEY."
+fi
+
+# Automatically fallback to BROWSERSTACK_* variables exported by the BrowserStack task
+BS_USERNAME="${BS_USERNAME:-$BROWSERSTACK_USERNAME}"
+BS_ACCESS_KEY="${BS_ACCESS_KEY:-$BROWSERSTACK_ACCESS_KEY}"
+
+if [ -z "$BS_USERNAME" ] || [ -z "$BS_ACCESS_KEY" ]; then
+  echo "ERROR: Missing BrowserStack credentials. Provide a .env file or ensure BS_USERNAME/BS_ACCESS_KEY (or BROWSERSTACK_USERNAME/BROWSERSTACK_ACCESS_KEY) environment variables are set."
   exit 1
+else
+  echo "  BrowserStack credentials initialized successfully for: $BS_USERNAME"
 fi
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
@@ -31,11 +37,53 @@ FEATURES_DIR="$SCRIPT_DIR/src/test/resources/Features"
 BS_YML="$SCRIPT_DIR/browserstack.yml"
 
 echo "============================================================"
-echo " BrowserStack SDK Pipeline — Local Run"
+echo " BrowserStack SDK Pipeline — Run"
 echo "============================================================"
 
 # ── STEP 1: Fetch 5 random manual (not_automated) test cases from TM ─────────
 echo ""
+
+# If TM_PROJECT_ID is numeric (e.g. 3635057), resolve it to PR-XX identifier
+if echo "$TM_PROJECT_ID" | grep -qE '^[0-9]+$'; then
+  echo "  Resolving numeric project ID $TM_PROJECT_ID to PR-XX identifier..."
+  PR_IDENTIFIER=$(python3 - "$TM_PROJECT_ID" "$BS_USERNAME" "$BS_ACCESS_KEY" <<'PYEOF'
+import sys, json, subprocess
+numeric_id, username, access_key = sys.argv[1], sys.argv[2], sys.argv[3]
+page = 1
+while True:
+    result = subprocess.run([
+        "curl", "-s", "-u", f"{username}:{access_key}",
+        f"https://test-management.browserstack.com/api/v2/projects?per_page=100&page={page}"
+    ], capture_output=True, text=True)
+    try:
+        data = json.loads(result.stdout)
+    except Exception:
+        break
+    if isinstance(data, dict) and "message" in data:
+        print(f"API Error: {data.get('message')}", file=sys.stderr)
+        break
+    projects = data.get("projects", [])
+    if not projects:
+        break
+    for p in projects:
+        url = p.get("urls", {}).get("self", "")
+        if url.endswith("/" + numeric_id):
+            print(p["identifier"])
+            sys.exit(0)
+    info = data.get("info", {})
+    if not info.get("next"):
+        break
+    page += 1
+PYEOF
+)
+  if [ -n "$PR_IDENTIFIER" ]; then
+    TM_PROJECT_ID="$PR_IDENTIFIER"
+    echo "  Resolved to: $TM_PROJECT_ID"
+  else
+    echo "  Could not resolve numeric ID, using as-is: $TM_PROJECT_ID"
+  fi
+fi
+
 echo "[1/4] Fetching 5 random manual test cases from Test Management (project: $TM_PROJECT_ID)..."
 
 TM_RESPONSE=$(curl -s \
@@ -45,14 +93,21 @@ TM_RESPONSE=$(curl -s \
 # Pick 5 random IDs from the returned list
 TC_IDS=$(echo "$TM_RESPONSE" | python3 -c "
 import sys, json, random
-data = json.load(sys.stdin)
-tcs = data.get('test_cases', [])
-if not tcs:
-    print('ERROR: No test cases returned', file=sys.stderr)
+try:
+    data = json.load(sys.stdin)
+    if isinstance(data, dict) and 'message' in data:
+        print(f'API Error Response: {data.get(\"message\")}', file=sys.stderr)
+        sys.exit(1)
+    tcs = data.get('test_cases', []) if isinstance(data, dict) else []
+    if not tcs:
+        print('ERROR: No test cases returned from Test Management API', file=sys.stderr)
+        sys.exit(1)
+    sample = random.sample(tcs, min(5, len(tcs)))
+    ids = [tc['identifier'] for tc in sample]
+    print(' '.join(ids))
+except Exception as e:
+    print(f'Error processing Test Management response: {e}', file=sys.stderr)
     sys.exit(1)
-sample = random.sample(tcs, min(5, len(tcs)))
-ids = [tc['identifier'] for tc in sample]
-print(' '.join(ids))
 ")
 
 if [ $? -ne 0 ]; then
