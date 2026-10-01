@@ -13,7 +13,9 @@ import org.json.simple.parser.JSONParser;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
@@ -72,10 +74,14 @@ public class CucumberTest {
               String browser=System.getProperty("browser-type").toLowerCase();
               if (browser.equalsIgnoreCase("chrome")) {
                      WebDriverManager.chromedriver().setup();
-                     tlDriver.set(new ChromeDriver());
+                     ChromeOptions chromeOptions = new ChromeOptions();
+                     chromeOptions.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu");
+                     tlDriver.set(new ChromeDriver(chromeOptions));
               } else if (browser.equalsIgnoreCase("firefox")) {
                      WebDriverManager.firefoxdriver().setup();
-                     tlDriver.set(new FirefoxDriver());
+                     FirefoxOptions firefoxOptions = new FirefoxOptions();
+                     firefoxOptions.addArguments("--headless");
+                     tlDriver.set(new FirefoxDriver(firefoxOptions));
               } else if (browser.equalsIgnoreCase("safari")) {
                      WebDriverManager.safaridriver().setup();
                      tlDriver.set(new SafariDriver());
