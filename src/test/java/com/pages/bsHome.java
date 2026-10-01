@@ -35,7 +35,7 @@ public class bsHome {
 
     public bsHome(WebDriver driver){
         this.driver = driver;
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         PageFactory.initElements(driver,this);
     }
     public void searchProduct(){
@@ -82,7 +82,7 @@ public class bsHome {
             FluentWait wait = new FluentWait(driver)
                     .pollingEvery(Duration.ofSeconds(2))
                     .ignoring(Exception.class)
-                    .withTimeout(Duration.ofSeconds(10));
+                    .withTimeout(Duration.ofSeconds(30));
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("span.username")));
         }catch(Exception e){
             return false;

@@ -41,10 +41,13 @@ public class UsersSteps {
     public void product_images_are_not_loaded_for_the_user(String user) {
         boolean imageload = bshome.verifyimageLoaded();
         if (imageload){
-            System.out.println("Product images loaded for user");
-            sc.log("Product images loaded for user");
-        }else
-            throw new AssertionError("Product images not loaded for "+ user);
+            // Images loaded — unexpected for this user, fail the test
+            throw new AssertionError("Product images unexpectedly loaded for " + user);
+        } else {
+            // Images not loaded — expected behavior for image_not_loading_user
+            System.out.println("Product images not loaded as expected for " + user);
+            sc.log("Product images not loaded as expected for " + user);
+        }
     }
     @When("User clicks on Orders")
     public void user_clicks_on_orders() {

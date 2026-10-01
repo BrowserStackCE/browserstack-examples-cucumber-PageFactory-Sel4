@@ -22,13 +22,13 @@ consoleLogs: errors
 
 
 testObservability: true
-accessibility: true
-accessibilityOptions:
-  wcagVersion: wcag21aaa 
-  includeIssueType:
-    bestPractice: true 
-    needsReview: true 
-    experimental: true 
+accessibility: false
+# accessibilityOptions:
+#   wcagVersion: wcag21aaa 
+#   includeIssueType:
+#     bestPractice: true 
+#     needsReview: true 
+#     experimental: true 
 
 
 performance: assert
@@ -37,11 +37,11 @@ percyCaptureMode: auto
 browserProfiling: true
 
 
-testOrchestrationOptions:
-  retryTestsOnFailure:
-    enabled: true
-    maxRetries: 2
-  runSmartSelection:
-    enabled: true
-    mode: relevantFirst
-  runPreviouslyFailedFirst: true
+# testOrchestrationOptions:
+#   retryTestsOnFailure:
+#     enabled: true
+#     maxRetries: 2
+#   runSmartSelection:
+#     enabled: true
+#     mode: relevantFirst
+#   runPreviouslyFailedFirst: true

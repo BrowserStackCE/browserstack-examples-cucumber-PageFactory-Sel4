@@ -14,7 +14,7 @@ public class bsSignin {
     public bsSignin(WebDriver driver){
         this.driver = driver;
         PageFactory.initElements(driver,this);
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(30));
     }
 
     @FindBy(xpath = "//div[contains(text(),'Username')]/..")

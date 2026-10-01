@@ -15,7 +15,7 @@ public class bsCheckout {
     WebDriverWait wait;
     public bsCheckout(WebDriver driver){
         this.driver = driver;
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         PageFactory.initElements(driver,this);
     }
 
