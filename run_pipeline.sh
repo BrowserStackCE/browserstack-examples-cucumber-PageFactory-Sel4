@@ -185,10 +185,11 @@ echo "  TC1=$TC1  TC2=$TC2  TC3=$TC3  TC4=$TC4  TC5=$TC5"
 echo ""
 echo "[2/4] Replacing test case IDs in feature files..."
 
-# Backup originals (only if backup doesn't already exist)
-[ -f "$FEATURES_DIR/E2E.feature.bak" ]    || cp "$FEATURES_DIR/E2E.feature"    "$FEATURES_DIR/E2E.feature.bak"
-[ -f "$FEATURES_DIR/Users.feature.bak" ]  || cp "$FEATURES_DIR/Users.feature"  "$FEATURES_DIR/Users.feature.bak"
-[ -f "$FEATURES_DIR/Offers.feature.bak" ] || cp "$FEATURES_DIR/Offers.feature" "$FEATURES_DIR/Offers.feature.bak"
+# Always restore from backup first (ensures a clean base on every run, no leftover TC IDs from previous runs)
+# Create backup only on the very first run (when no backup exists yet)
+[ -f "$FEATURES_DIR/E2E.feature.bak" ]    && cp "$FEATURES_DIR/E2E.feature.bak"    "$FEATURES_DIR/E2E.feature"    || cp "$FEATURES_DIR/E2E.feature"    "$FEATURES_DIR/E2E.feature.bak"
+[ -f "$FEATURES_DIR/Users.feature.bak" ]  && cp "$FEATURES_DIR/Users.feature.bak"  "$FEATURES_DIR/Users.feature"  || cp "$FEATURES_DIR/Users.feature"  "$FEATURES_DIR/Users.feature.bak"
+[ -f "$FEATURES_DIR/Offers.feature.bak" ] && cp "$FEATURES_DIR/Offers.feature.bak" "$FEATURES_DIR/Offers.feature" || cp "$FEATURES_DIR/Offers.feature" "$FEATURES_DIR/Offers.feature.bak"
 
 # Replace TC IDs inline in the Scenario Outline name (e.g. "Scenario Outline: TC-7485 ...")
 # Each Scenario Outline already has a TC-XXXX in its name — we replace it with the new ID.
