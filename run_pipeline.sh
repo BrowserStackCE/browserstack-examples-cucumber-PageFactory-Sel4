@@ -11,7 +11,6 @@
 
 set -e
 
-# ── Load credentials from .env ────────────────────────────────────────────────
 # ── Load credentials from .env or Environment Variables ───────────────────────
 SCRIPT_DIR_EARLY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$SCRIPT_DIR_EARLY/.env" ]; then
