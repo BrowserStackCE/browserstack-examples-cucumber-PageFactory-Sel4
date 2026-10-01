@@ -190,54 +190,42 @@ echo "[2/4] Replacing test case IDs in feature files..."
 [ -f "$FEATURES_DIR/Users.feature.bak" ]  || cp "$FEATURES_DIR/Users.feature"  "$FEATURES_DIR/Users.feature.bak"
 [ -f "$FEATURES_DIR/Offers.feature.bak" ] || cp "$FEATURES_DIR/Offers.feature" "$FEATURES_DIR/Offers.feature.bak"
 
-# E2E.feature → replace existing TC id or inject TC1
-if grep -q "TC-[0-9]*" "$FEATURES_DIR/E2E.feature"; then
-  EXISTING=$(grep -o "TC-[0-9]*" "$FEATURES_DIR/E2E.feature" | head -1)
-  sed -i.tmp "s/$EXISTING/$TC1/g" "$FEATURES_DIR/E2E.feature"
-else
-  sed -i.tmp "s/Scenario Outline: /Scenario Outline: $TC1 /g" "$FEATURES_DIR/E2E.feature"
-fi
-rm -f "$FEATURES_DIR/E2E.feature.tmp"
-
-# Users.feature → replace up to 3 existing TC ids with TC2, TC3, TC4
+# Inject TC IDs as @TC-XXXX tags on the line BEFORE each Scenario line.
+# The BrowserStack SDK reads @TC-XXXX tags — NOT inline text in the scenario name.
 python3 - <<PYEOF
 import re
 
-with open('$FEATURES_DIR/Users.feature', 'r') as f:
-    content = f.read()
+def inject_tc_tag(filepath, new_ids):
+    with open(filepath, 'r') as f:
+        lines = f.readlines()
 
-existing = re.findall(r'TC-\d+', content)
-new_ids = ['$TC2', '$TC3', '$TC4']
+    # Remove any existing @TC-XXXX tag lines first (clean slate)
+    lines = [l for l in lines if not re.match(r'^\s*@TC-\d+\s*$', l)]
 
-for i, old_id in enumerate(existing[:3]):
-    content = content.replace(old_id, new_ids[i], 1)
+    result = []
+    id_iter = iter(new_ids)
+    for line in lines:
+        # Match any Scenario / Scenario Outline line (with optional leading spaces)
+        if re.match(r'^\s*Scenario(?: Outline)?:', line):
+            tc = next(id_iter, None)
+            if tc:
+                # Preserve the indentation of the scenario line for the tag
+                indent = re.match(r'^(\s*)', line).group(1)
+                result.append(f'{indent}@{tc}\n')
+        result.append(line)
 
-# If no existing TC ids, inject before each Scenario Outline
-if not existing:
-    count = [0]
-    def replacer(m):
-        idx = count[0]
-        count[0] += 1
-        return 'Scenario Outline: ' + new_ids[idx] + ' ' if idx < len(new_ids) else m.group(0)
-    content = re.sub(r'Scenario Outline: ', replacer, content)
+    with open(filepath, 'w') as f:
+        f.writelines(result)
 
-with open('$FEATURES_DIR/Users.feature', 'w') as f:
-    f.write(content)
-print('  Users.feature updated')
+inject_tc_tag('$FEATURES_DIR/E2E.feature',    ['$TC1'])
+inject_tc_tag('$FEATURES_DIR/Users.feature',  ['$TC2', '$TC3', '$TC4'])
+inject_tc_tag('$FEATURES_DIR/Offers.feature', ['$TC5'])
+print('  Feature files updated with @TC-XXXX tags')
 PYEOF
 
-# Offers.feature → replace existing TC id or inject TC5
-if grep -q "TC-[0-9]*" "$FEATURES_DIR/Offers.feature"; then
-  EXISTING=$(grep -o "TC-[0-9]*" "$FEATURES_DIR/Offers.feature" | head -1)
-  sed -i.tmp "s/$EXISTING/$TC5/g" "$FEATURES_DIR/Offers.feature"
-else
-  sed -i.tmp "s/Scenario Outline: /Scenario Outline: $TC5 /g" "$FEATURES_DIR/Offers.feature"
-fi
-rm -f "$FEATURES_DIR/Offers.feature.tmp"
-
-echo "  E2E.feature    → $TC1"
-echo "  Users.feature  → $TC2, $TC3, $TC4"
-echo "  Offers.feature → $TC5"
+echo "  E2E.feature    → @$TC1"
+echo "  Users.feature  → @$TC2, @$TC3, @$TC4"
+echo "  Offers.feature → @$TC5"
 
 # ── STEP 3: Update browserstack.yml ──────────────────────────────────────────
 echo ""
@@ -257,6 +245,11 @@ content = re.sub(r'^projectName:.*', 'projectName: $TM_PROJECT_NAME', content, f
 content = re.sub(r'^browserstackAutomation:.*', 'browserstackAutomation: false', content, flags=re.MULTILINE)
 # Clear platforms so no Automate sessions are attempted (local run only)
 content = re.sub(r'^platforms:.*?(?=^\w)', 'platforms: []\n', content, flags=re.MULTILINE | re.DOTALL)
+# Enable Test Management reporting so TC IDs are pushed to Jira
+if re.search(r'^testManagement:', content, flags=re.MULTILINE):
+    content = re.sub(r'^testManagement:.*', 'testManagement: true', content, flags=re.MULTILINE)
+else:
+    content += '\ntestManagement: true\n'
 
 with open('$BS_YML', 'w') as f:
     f.write(content)
