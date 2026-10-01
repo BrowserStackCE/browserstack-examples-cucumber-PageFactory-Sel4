@@ -10,11 +10,22 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <lombok.version>1.18.30</lombok.version>
         <surefire.plugin.version>3.0.0-M5</surefire.plugin.version>
         <testng.version>7.4.0</testng.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <Application_url>https://bstackdemo.com/</Application_url>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>

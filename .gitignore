@@ -33,3 +33,6 @@ build/
 *.iml
 .DS_Store
 !gradle/wrapper/*
+.env
+browserstack.yml.bak
+browserstack.yml
