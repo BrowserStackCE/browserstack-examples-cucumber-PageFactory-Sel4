@@ -24,6 +24,9 @@ fi
 BS_USERNAME="${BS_USERNAME:-$BROWSERSTACK_USERNAME}"
 BS_ACCESS_KEY="${BS_ACCESS_KEY:-$BROWSERSTACK_ACCESS_KEY}"
 
+# Clean up the username: Strip '-azure' suffix automatically added by the BrowserStack Azure Plugin
+BS_USERNAME="${BS_USERNAME%-azure}"
+
 # ── DIAGNOSTICS: Print all expected env vars (mask secrets) ───────────────────
 echo ""
 echo "============================================================"
