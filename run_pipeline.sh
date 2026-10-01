@@ -190,42 +190,51 @@ echo "[2/4] Replacing test case IDs in feature files..."
 [ -f "$FEATURES_DIR/Users.feature.bak" ]  || cp "$FEATURES_DIR/Users.feature"  "$FEATURES_DIR/Users.feature.bak"
 [ -f "$FEATURES_DIR/Offers.feature.bak" ] || cp "$FEATURES_DIR/Offers.feature" "$FEATURES_DIR/Offers.feature.bak"
 
-# Inject TC IDs as @TC-XXXX tags on the line BEFORE each Scenario line.
-# The BrowserStack SDK reads @TC-XXXX tags — NOT inline text in the scenario name.
+# Replace TC IDs inline in the Scenario Outline name (e.g. "Scenario Outline: TC-7485 ...")
+# Each Scenario Outline already has a TC-XXXX in its name — we replace it with the new ID.
+# If no TC ID exists yet in the name, we inject one after "Scenario Outline: ".
 python3 - <<PYEOF
 import re
 
-def inject_tc_tag(filepath, new_ids):
+def replace_tc_in_name(filepath, new_ids):
     with open(filepath, 'r') as f:
-        lines = f.readlines()
+        content = f.read()
 
-    # Remove any existing @TC-XXXX tag lines first (clean slate)
-    lines = [l for l in lines if not re.match(r'^\s*@TC-\d+\s*$', l)]
-
-    result = []
     id_iter = iter(new_ids)
-    for line in lines:
-        # Match any Scenario / Scenario Outline line (with optional leading spaces)
-        if re.match(r'^\s*Scenario(?: Outline)?:', line):
-            tc = next(id_iter, None)
-            if tc:
-                # Preserve the indentation of the scenario line for the tag
-                indent = re.match(r'^(\s*)', line).group(1)
-                result.append(f'{indent}@{tc}\n')
-        result.append(line)
+
+    def replacer(m):
+        tc = next(id_iter, None)
+        if tc is None:
+            return m.group(0)
+        prefix = m.group(1)   # "Scenario Outline: " or "Scenario: "
+        existing_tc = m.group(2)  # existing TC-XXXX or None
+        rest = m.group(3)     # rest of the scenario name
+        if existing_tc:
+            # Replace existing TC id in the name
+            return f'{prefix}{tc} {rest.lstrip()}'
+        else:
+            # No existing TC id — inject one
+            return f'{prefix}{tc} {rest}'
+
+    # Match: (Scenario Outline: |Scenario: )(TC-\d+ )?(rest of name)
+    content = re.sub(
+        r'([ \t]*Scenario(?: Outline)?: )(TC-\d+\s+)?(.*)',
+        replacer,
+        content
+    )
 
     with open(filepath, 'w') as f:
-        f.writelines(result)
+        f.write(content)
 
-inject_tc_tag('$FEATURES_DIR/E2E.feature',    ['$TC1'])
-inject_tc_tag('$FEATURES_DIR/Users.feature',  ['$TC2', '$TC3', '$TC4'])
-inject_tc_tag('$FEATURES_DIR/Offers.feature', ['$TC5'])
-print('  Feature files updated with @TC-XXXX tags')
+replace_tc_in_name('$FEATURES_DIR/E2E.feature',    ['$TC1'])
+replace_tc_in_name('$FEATURES_DIR/Users.feature',  ['$TC2', '$TC3', '$TC4'])
+replace_tc_in_name('$FEATURES_DIR/Offers.feature', ['$TC5'])
+print('  Feature files updated with new TC IDs in scenario names')
 PYEOF
 
-echo "  E2E.feature    → @$TC1"
-echo "  Users.feature  → @$TC2, @$TC3, @$TC4"
-echo "  Offers.feature → @$TC5"
+echo "  E2E.feature    → $TC1"
+echo "  Users.feature  → $TC2, $TC3, $TC4"
+echo "  Offers.feature → $TC5"
 
 # ── STEP 3: Update browserstack.yml ──────────────────────────────────────────
 echo ""
