@@ -12,14 +12,17 @@
 set -e
 
 # ── Load credentials from .env ────────────────────────────────────────────────
+# ── Load credentials from .env or Environment Variables ───────────────────────
 SCRIPT_DIR_EARLY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$SCRIPT_DIR_EARLY/.env" ]; then
   set -a
   source "$SCRIPT_DIR_EARLY/.env"
   set +a
   echo "  Loaded credentials from .env"
+elif [ -n "$BS_USERNAME" ] && [ -n "$BS_ACCESS_KEY" ]; then
+  echo "  Using existing environment variables for BrowserStack credentials"
 else
-  echo "ERROR: .env file not found. Create it with BS_USERNAME, BS_ACCESS_KEY, TM_PROJECT_ID, TM_PROJECT_NAME"
+  echo "ERROR: Missing credentials. Provide a .env file or set BS_USERNAME & BS_ACCESS_KEY."
   exit 1
 fi
 
