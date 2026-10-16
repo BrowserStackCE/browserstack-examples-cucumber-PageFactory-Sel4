@@ -100,7 +100,7 @@ browserProfiling: true
 testOrchestrationOptions:
   retryTestsOnFailure:
     enabled: true
-    maxRetries: 2
+    maxRetries: 1
   runSmartSelection:
     enabled: true
     mode: relevantFirst
