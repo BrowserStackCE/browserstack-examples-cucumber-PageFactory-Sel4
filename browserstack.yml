@@ -3,8 +3,8 @@
 # =============================
 # Add your BrowserStack userName and accessKey here or set BROWSERSTACK_USERNAME and
 # BROWSERSTACK_ACCESS_KEY as env variables
-userName: YOUR_USERNAME
-accessKey: YOUR_ACCESS_KEY
+userName: BROWSERSTACK_USERNAME
+accessKey: BROWSERSTACK_ACCESS_KEY
 
 # ======================
 # BrowserStack Reporting
@@ -30,11 +30,11 @@ selfHeal: true
 platforms:
   - os: OS X
     osVersion: Big Sur
-    browserName: Chrome
+    browserName: Safari
     browserVersion: latest
   - os: Windows
     osVersion: 10
-    browserName: Edge
+    browserName: Chrome
     browserVersion: latest
   - deviceName: Samsung Galaxy S2*
     browserName: chrome # Try 'samsung' for Samsung browser
