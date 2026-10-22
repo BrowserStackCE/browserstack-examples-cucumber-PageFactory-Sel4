@@ -2,7 +2,7 @@ package Runner;
 
 import com.browserstack.local.Local;
 import com.qa.util.BrowserstackTestStatusListener;
-import com.qa.util.CapabilityReader;
+// import com.qa.util.CapabilityReader;
 import io.cucumber.testng.CucumberOptions;
 import io.cucumber.testng.FeatureWrapper;
 import io.cucumber.testng.PickleWrapper;
@@ -80,23 +80,27 @@ public class CucumberTest {
                      WebDriverManager.safaridriver().setup();
                      tlDriver.set(new SafariDriver());
               } else if (browser.equalsIgnoreCase("remote")) {
-                     JSONParser parser = new JSONParser();
-                     JSONObject config;
-                     JSONObject envs;
-                     config = (JSONObject) parser.parse(new FileReader("src/test/resources/browserstack/conf/"+config_file));
-                     envs = (JSONObject) config.get("environments");
-                     Object env = envs.get(environment);
-                     capabilities = CapabilityReader.getCapability((Map<String, String>) env, config);
-                     String username = (String) config.get("user");
-                     if (username == null || username.isEmpty()){
-                            username = System.getenv("BROWSERSTACK_USERNAME");
-                     }
-                     String accessKey = (String) config.get("key");
-                     if (accessKey == null || accessKey.isEmpty()) {
-                            accessKey = System.getenv("BROWSERSTACK_ACCESS_KEY");
-                     }
-                     tlDriver.set( new RemoteWebDriver(
-                             new URL("https://" + username + ":" + accessKey + "@" + config.get("server") + "/wd/hub"), capabilities));
+              //        JSONParser parser = new JSONParser();
+              //        JSONObject config;
+              //        JSONObject envs;
+              //        config = (JSONObject) parser.parse(new FileReader("src/test/resources/browserstack/conf/"+config_file));
+              //        envs = (JSONObject) config.get("environments");
+              //        Object env = envs.get(environment);
+              //        capabilities = CapabilityReader.getCapability((Map<String, String>) env, config);
+              //        String username = (String) config.get("user");
+              //        if (username == null || username.isEmpty()){
+              //               username = System.getenv("BROWSERSTACK_USERNAME");
+              //        }
+              //        String accessKey = (String) config.get("key");
+              //        if (accessKey == null || accessKey.isEmpty()) {
+              //               accessKey = System.getenv("BROWSERSTACK_ACCESS_KEY");
+              //        }
+              //        tlDriver.set( new RemoteWebDriver(
+              //                new URL("https://" + username + ":" + accessKey + "@" + config.get("server") + "/wd/hub"), capabilities));
+              // The BrowserStack SDK will automatically intercept this local driver
+              // and route it to BrowserStack using your browserstack.yml config
+              WebDriverManager.chromedriver().setup();
+              tlDriver.set(new ChromeDriver());
               }else
                      throw new AssertionError("Invalid input for browser");
               Map<String,String> deviceInfo = new HashMap<>();

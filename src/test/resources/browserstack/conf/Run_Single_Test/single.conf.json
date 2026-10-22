@@ -3,9 +3,7 @@
   "user": "",
   "key": "",
 
-  "capabilities": {
-    "projectName": "Cucumber Java",
-    "buildName": "BStackDemo BDD",
+"capabilities": {
     "sessionName": "BS Suite",
     "debug": "true",
     "networkLogs": "true",
