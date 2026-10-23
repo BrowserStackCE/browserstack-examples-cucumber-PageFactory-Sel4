@@ -1,6 +1,5 @@
 package StepDefinitions;
 
-import Runner.CucumberTest;
 import com.qa.util.ScreenReaderUtil;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -23,10 +22,15 @@ import java.util.Map;
  */
 public class ScreenReaderSteps {
 
+    private final ApplicationHooks hooks;
     private Scenario scenario;
     private boolean enabled = false;
     private static final int SPOKEN_COUNT = 10;
     private final List<String> spokenOutputs = new ArrayList<>();
+
+    public ScreenReaderSteps(ApplicationHooks hooks) {
+        this.hooks = hooks;
+    }
 
     @Before
     public void captureScenario(Scenario scenario) {
@@ -34,12 +38,12 @@ public class ScreenReaderSteps {
     }
 
     private ScreenReaderUtil sr() {
-        return new ScreenReaderUtil(CucumberTest.getDriver());
+        return new ScreenReaderUtil(hooks.driver);
     }
 
     /** True only for a non-mobile session whose platform is Windows. */
     private boolean isWindowsDesktop() {
-        WebDriver driver = CucumberTest.getDriver();
+        WebDriver driver = hooks.driver;
         try {
             Object info = ((JavascriptExecutor) driver).executeScript("mobile:deviceInfo");
             if (info instanceof Map && !((Map<?, ?>) info).isEmpty()) {
