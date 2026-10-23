@@ -1,0 +1,33 @@
+{
+  "server": "hub-cloud.browserstack.com",
+  "user": "",
+  "key": "",
+
+  "capabilities": {
+    "projectName": "Cucumber Java",
+    "buildName": "BDDParallel-4",
+    "sessionName": "BS Suite",
+    "debug": "true",
+    "networkLogs": "true",
+    "consoleLogs": "errors"
+  },
+
+  "environments": {
+    "env1": {
+      "browser": "Edge",
+      "browser_version": "latest",
+      "envOptions": {
+        "os": "Windows",
+        "osVersion": "11"
+      }
+    },
+    "env2":{
+      "browser": "Safari",
+      "browser_version": "15.3",
+      "envOptions": {
+        "os": "OS X",
+        "osVersion": "Monterey"
+      }
+    }
+  }
+}
