@@ -8,8 +8,14 @@ import io.cucumber.java.Scenario;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import org.testng.Assert;
+
+import com.browserstack.accessibility.AccessibilityUtils;
 
 public class UsersSteps {
 
@@ -67,6 +73,43 @@ public class UsersSteps {
             sc.log(user+" was not able to login");
         }else
             throw new AssertionError("Locked user "+user+" logged in!");
+
+        // Accessibility assertion using BrowserStack Accessibility results summary
+        // Documentation reference:
+        // https://www.browserstack.com/docs/accessibility/automated-tests/add-accessibility-assertions
+        Map<String, Object> summary = AccessibilityUtils.getResultsSummary(hooks.driver);
+
+        // Debug logging to understand NPE / null values
+        System.out.println("Accessibility summary: " + summary);
+        sc.log("Accessibility summary: " + String.valueOf(summary));
+
+        if (summary == null) {
+            sc.log("Accessibility summary is null, skipping accessibility assertions.");
+            return;
+        }
+
+        Object severityMapObj = summary.get("issueCountBySeverity");
+        if (!(severityMapObj instanceof Map)) {
+            sc.log("issueCountBySeverity is missing or not a Map in accessibility summary, skipping assertions.");
+            return;
+        }
+
+        Map<?, ?> severityMap = (Map<?, ?>) severityMapObj;
+        Object criticalObj = severityMap.get("critical");
+        sc.log("Critical issue count (raw): " + String.valueOf(criticalObj));
+
+        if (criticalObj == null) {
+            sc.log("Critical issue count is null in accessibility summary, skipping assertions.");
+            return;
+        }
+        
+        // Fetch and log detailed accessibility results as well
+        ArrayList<Map<String, Object>> results = AccessibilityUtils.getResults(hooks.driver);
+        System.out.println("Accessibility detailed results: " + results);
+        sc.log("Accessibility detailed results: " + String.valueOf(results));
+
+        int criticalIssueCount = Integer.parseInt(String.valueOf(criticalObj));
+        Assert.assertTrue(criticalIssueCount < 1, "Critical issue count breached the threshold!");
 
     }
 

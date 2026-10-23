@@ -19,19 +19,21 @@ public class BrowserstackTestStatusListener implements ITestListener {
 
     @Override
     public void onTestSuccess(ITestResult result) {
+        System.out.println("[DBG] onTestSuccess " + result.getName() + " thread=" + Thread.currentThread().getName());
         Object currentClass = result.getInstance();
         WebDriver driver = ((CucumberTest) currentClass).getDriver();
-        markTestStatus("passed", "", driver);
+        //markTestStatus("passed", "", driver);
         driver.quit();
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
+        System.out.println("[DBG] onTestFailure " + result.getName() + " thread=" + Thread.currentThread().getName() + " error=" + result.getThrowable());
         Object currentClass = result.getInstance();
         WebDriver driver = ((CucumberTest) currentClass).getDriver();
         String message = result.getThrowable().getMessage();
         String reason = (message != null && message.length() > 254) ? message.substring(0, 254) : message;
-        markTestStatus("failed", reason.replaceAll("[^a-zA-Z0-9._-]", " "), driver);
+        //markTestStatus("failed", reason.replaceAll("[^a-zA-Z0-9._-]", " "), driver);
         driver.quit();
     }
 

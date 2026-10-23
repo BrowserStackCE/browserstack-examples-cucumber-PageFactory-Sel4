@@ -28,9 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @CucumberOptions(features = "src/test/resources/Features", glue = {"StepDefinitions"},
-        plugin = {"pretty",
-                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"},
-        monochrome = true
+        plugin = {"pretty","json:target/cucumber-reports/Cucumber.json"
+                //"com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"
+        },
+        monochrome = true,publish = true
        )
 @Listeners(BrowserstackTestStatusListener.class)
 public class CucumberTest {
@@ -41,6 +42,7 @@ public class CucumberTest {
        @Parameters(value = {"config"})
        @BeforeSuite
        public void localStart(String config_file) throws Exception {
+              System.out.println("[DBG] @BeforeSuite localStart config='" + config_file + "' browser-type=" + System.getProperty("browser-type") + " thread=" + Thread.currentThread().getName());
               JSONParser parser = new JSONParser();
               if(!config_file.isEmpty()) {
                      JSONObject config = (JSONObject) parser.parse(new FileReader("src/test/resources/browserstack/conf/" + config_file));
@@ -62,6 +64,7 @@ public class CucumberTest {
        }
        @BeforeClass(alwaysRun = true)
        public void setUpClass() {
+              System.out.println("[DBG] @BeforeClass setUpClass thread=" + Thread.currentThread().getName());
               testNGCucumberRunner = new TestNGCucumberRunner(this.getClass());
        }
        @Parameters(value = { "config", "environment" })
@@ -69,6 +72,7 @@ public class CucumberTest {
        public void setUpHooks(String config_file, String environment) throws Exception {
               DesiredCapabilities capabilities = new DesiredCapabilities();
               String browser=System.getProperty("browser-type").toLowerCase();
+              System.out.println("[DBG] @BeforeMethod setUpHooks config='" + config_file + "' env='" + environment + "' browser-type=" + browser + " thread=" + Thread.currentThread().getName());
               if (browser.equalsIgnoreCase("chrome")) {
                      WebDriverManager.chromedriver().setup();
                      tlDriver.set(new ChromeDriver());
@@ -85,7 +89,9 @@ public class CucumberTest {
                      config = (JSONObject) parser.parse(new FileReader("src/test/resources/browserstack/conf/"+config_file));
                      envs = (JSONObject) config.get("environments");
                      Object env = envs.get(environment);
+                     System.out.println("[DBG] env entry = " + env);
                      capabilities = CapabilityReader.getCapability((Map<String, String>) env, config);
+                     System.out.println("[DBG] top-level capabilities (no bstack:options secrets) browserName=" + capabilities.getBrowserName() + " browserVersion=" + capabilities.getBrowserVersion() + " keys=" + capabilities.asMap().keySet());
                      String username = (String) config.get("user");
                      if (username == null || username.isEmpty()){
                             username = System.getenv("BROWSERSTACK_USERNAME");
@@ -94,12 +100,26 @@ public class CucumberTest {
                      if (accessKey == null || accessKey.isEmpty()) {
                             accessKey = System.getenv("BROWSERSTACK_ACCESS_KEY");
                      }
-                     tlDriver.set( new RemoteWebDriver(
-                             new URL("https://" + username + ":" + accessKey + "@" + config.get("server") + "/wd/hub"), capabilities));
+                     System.out.println("[DBG] creating RemoteWebDriver server=" + config.get("server") + " user=" + (username == null ? "NULL" : "set") + " key=" + (accessKey == null ? "NULL" : "set"));
+                     try {
+                            tlDriver.set( new RemoteWebDriver(
+                                    new URL("https://" + username + ":" + accessKey + "@" + config.get("server") + "/wd/hub"), capabilities));
+                            System.out.println("[DBG] RemoteWebDriver created OK thread=" + Thread.currentThread().getName());
+                     } catch (RuntimeException e) {
+                            System.out.println("[DBG] RemoteWebDriver FAILED: " + e.getClass().getSimpleName() + " cause=" + (e.getCause() == null ? "none" : e.getCause().getMessage()));
+                            throw e;
+                     }
               }else
                      throw new AssertionError("Invalid input for browser");
-              if(!capabilities.toString().contains("realMobile"))
+              Map<String,String> deviceInfo = new HashMap<>();
+              JavascriptExecutor jse = (JavascriptExecutor) getDriver();
+              try{
+                     deviceInfo = (Map<String, String>) jse.executeScript("mobile:deviceInfo");
+              }catch(Exception e){
+              }
+              if(deviceInfo.isEmpty())
                      getDriver().manage().window().maximize();
+
        }
 
        public static synchronized WebDriver getDriver(){
@@ -108,9 +128,10 @@ public class CucumberTest {
 
        @Test(dataProvider = "scenarios")
        public void scenario(PickleWrapper pickleWrapper, FeatureWrapper featureWrapper) throws MalformedURLException {
+              System.out.println("[DBG] @Test scenario='" + pickleWrapper.getPickle().getName() + "' thread=" + Thread.currentThread().getName());
               JavascriptExecutor jse = (JavascriptExecutor)getDriver();
-              if(System.getProperty("browser-type").equalsIgnoreCase("remote"))
-              jse.executeScript("browserstack_executor: {\"action\": \"setSessionName\", \"arguments\": {\"name\":\" "+       pickleWrapper.getPickle().getName()   +" \" }}");
+              //if(System.getProperty("browser-type").equalsIgnoreCase("remote"))
+              //jse.executeScript("browserstack_executor: {\"action\": \"setSessionName\", \"arguments\": {\"name\":\" "+       pickleWrapper.getPickle().getName()   +" \" }}");
               testNGCucumberRunner.runScenario(pickleWrapper.getPickle());
            }
        @DataProvider(parallel = true)
@@ -120,10 +141,12 @@ public class CucumberTest {
 
        @AfterClass(alwaysRun = true)
        public void tearDownClass() {
-              testNGCucumberRunner.finish();
+              //testNGCucumberRunner.finish(); //Conflict with the SDK   Runner.CucumberTest.tearDownClass
+              // NoSuchMethod org.yaml.snakeyaml.constructor.Constructor.<init>
        }
        @AfterSuite
        public void shutLocal() throws Exception {
+              System.out.println("[DBG] @AfterSuite shutLocal");
               System.out.println("Stopping Local");
               if(l != null) l.stop();
        }

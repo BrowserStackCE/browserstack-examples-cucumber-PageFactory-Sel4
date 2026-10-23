@@ -17,12 +17,4 @@ public class ApplicationHooks extends CucumberTest {
         sc.attach(sourcePath,"image/png",screenshotName);
     }
 
-    private void markTestStatus(String status, String reason, WebDriver driver) {
-        try {
-            JavascriptExecutor jse = (JavascriptExecutor) driver;
-            jse.executeScript("browserstack_executor: {\"action\": \"setSessionStatus\", \"arguments\": {\"status\": \"" + status + "\", \"reason\": \"" + reason + "\"}}");
-        } catch (Exception e) {
-            System.out.print("Error executing javascript" + e);
-        }
-    }
 }
