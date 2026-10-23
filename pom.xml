@@ -92,7 +92,10 @@
                 <configuration>
                     <suiteXmlFiles>
                         <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
-                    </suiteXmlFiles><argLine>-javaagent:"${com.browserstack:browserstack-java-sdk:jar}"</argLine>
+                    </suiteXmlFiles>
+                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                    <trimStackTrace>false</trimStackTrace>
+                    <argLine>-javaagent:"${com.browserstack:browserstack-java-sdk:jar}"</argLine>
                     <systemProperties>
                         <browser-type>${browser-type}</browser-type>
                         <Application_url>${Application_url}</Application_url>
