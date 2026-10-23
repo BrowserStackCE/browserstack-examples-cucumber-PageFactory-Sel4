@@ -35,7 +35,7 @@ platforms:
   - os: Windows
     osVersion: 10
     browserName: Chrome
-    browserVersion: 151.0
+    browserVersion: latest
   - deviceName: Samsung Galaxy S2*
     browserName: chrome # Try 'samsung' for Samsung browser
     #osVersion: "[12131415]"
