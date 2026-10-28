@@ -14,6 +14,12 @@
 
   "environments": {
     "env": {
+      "browser": "Chrome",
+      "browser_version": "latest",
+      "envOptions": {
+        "os": "OS X",
+        "osVersion": "Monterey"
+      }
     }
   }
 }

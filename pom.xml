@@ -79,7 +79,7 @@
         <dependency>
           <groupId>com.browserstack</groupId>
           <artifactId>browserstack-java-sdk</artifactId>
-          <version>LATEST</version>
+          <version>1.76.0</version>
         </dependency>
     </dependencies>
 
@@ -121,7 +121,7 @@
         <profile>
             <id>scenario-onprem</id>
             <properties>
-                <browser-type>firefox</browser-type>
+                <browser-type>chrome</browser-type>
                 <suiteXmlFile>testng.xml</suiteXmlFile>
             </properties>
         </profile>
