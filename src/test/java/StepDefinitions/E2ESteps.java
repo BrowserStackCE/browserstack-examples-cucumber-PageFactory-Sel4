@@ -12,7 +12,11 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.JavascriptExecutor;
 import org.testng.Assert;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +40,7 @@ public class E2ESteps {
         this.sc = scenario;
     }
     @Given("User is on home page")
-    public void user_is_on_home_page() {
+    public void user_is_on_home_page() throws FileNotFoundException {
         JavascriptExecutor jse = (JavascriptExecutor) hooks.driver;
         Map<String,String> deviceInfo = new HashMap<>();
         try{
@@ -48,6 +52,14 @@ public class E2ESteps {
             hooks.driver.get(System.getProperties().getProperty("Application_url").replaceAll("localhost","bs-local.com"));
         else
             hooks.driver.get(System.getProperties().getProperty("Application_url"));
+        Yaml yaml = new Yaml();
+        InputStream inputStream = new FileInputStream("browserstack.yml");
+        HashMap yamlMap = yaml.load(inputStream);
+        if(yamlMap.get("browserstackAutomation").toString().equalsIgnoreCase("true")) {
+            jse.executeScript("browserstack_executor: {\"action\":\"lighthouseAudit\",\"arguments\":{\"url\":\"" + hooks.driver.getCurrentUrl() + "\",\"executorOutput\":\"json\"}}");
+
+            jse.executeScript("browserstack_executor: {\"action\":\"lighthouseAudit\",\"arguments\":{\"url\":\"" + hooks.driver.getCurrentUrl() + "\",\"assertResult\":{\"categories\":{\"performance\":40,\"best-practices\":50},\"metrics\":{\"first-contentful-paint\":{\"moreThan\":50,\"metricUnit\":\"score\"},\"largest-contentful-paint\":{\"lessThan\":4000,\"metricUnit\":\"numeric\"},\"total-blocking-time\":{\"lessThan\":600,\"metricUnit\":\"numeric\"},\"cumulative-layout-shift\":{\"moreThan\":50,\"metricUnit\":\"score\"}}}}}");
+        }
     }
     @When("User clicks on sign in link")
     public void user_clicks_on_sign_in_link() {

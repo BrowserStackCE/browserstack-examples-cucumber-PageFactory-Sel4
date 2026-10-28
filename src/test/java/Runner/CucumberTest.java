@@ -28,9 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @CucumberOptions(features = "src/test/resources/Features", glue = {"StepDefinitions"},
-        plugin = {"pretty",
-                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"},
-        monochrome = true
+        plugin = {"pretty","json:target/cucumber-reports/Cucumber.json"
+                //"com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"
+        },
+        monochrome = true,publish = true
        )
 @Listeners(BrowserstackTestStatusListener.class)
 public class CucumberTest {
@@ -98,8 +99,15 @@ public class CucumberTest {
                              new URL("https://" + username + ":" + accessKey + "@" + config.get("server") + "/wd/hub"), capabilities));
               }else
                      throw new AssertionError("Invalid input for browser");
-              if(!capabilities.toString().contains("realMobile"))
+              Map<String,String> deviceInfo = new HashMap<>();
+              JavascriptExecutor jse = (JavascriptExecutor) getDriver();
+              try{
+                     deviceInfo = (Map<String, String>) jse.executeScript("mobile:deviceInfo");
+              }catch(Exception e){
+              }
+              if(deviceInfo.isEmpty())
                      getDriver().manage().window().maximize();
+
        }
 
        public static synchronized WebDriver getDriver(){
@@ -109,8 +117,8 @@ public class CucumberTest {
        @Test(dataProvider = "scenarios")
        public void scenario(PickleWrapper pickleWrapper, FeatureWrapper featureWrapper) throws MalformedURLException {
               JavascriptExecutor jse = (JavascriptExecutor)getDriver();
-              if(System.getProperty("browser-type").equalsIgnoreCase("remote"))
-              jse.executeScript("browserstack_executor: {\"action\": \"setSessionName\", \"arguments\": {\"name\":\" "+       pickleWrapper.getPickle().getName()   +" \" }}");
+              //if(System.getProperty("browser-type").equalsIgnoreCase("remote"))
+              //jse.executeScript("browserstack_executor: {\"action\": \"setSessionName\", \"arguments\": {\"name\":\" "+       pickleWrapper.getPickle().getName()   +" \" }}");
               testNGCucumberRunner.runScenario(pickleWrapper.getPickle());
            }
        @DataProvider(parallel = true)
@@ -120,7 +128,8 @@ public class CucumberTest {
 
        @AfterClass(alwaysRun = true)
        public void tearDownClass() {
-              testNGCucumberRunner.finish();
+              //testNGCucumberRunner.finish(); //Conflict with the SDK   Runner.CucumberTest.tearDownClass
+              // NoSuchMethod org.yaml.snakeyaml.constructor.Constructor.<init>
        }
        @AfterSuite
        public void shutLocal() throws Exception {

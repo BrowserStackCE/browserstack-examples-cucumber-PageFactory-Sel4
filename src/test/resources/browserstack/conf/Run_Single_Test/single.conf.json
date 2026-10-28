@@ -9,14 +9,13 @@
     "sessionName": "BS Suite",
     "debug": "true",
     "networkLogs": "true",
-    "seleniumVersion": "4.0.0",
     "consoleLogs": "errors"
   },
 
   "environments": {
     "env": {
-      "browser": "Chrome",
-      "browser_version": "latest",
+      "browserName": "Chrome",
+      "browserVersion": "latest",
       "envOptions": {
         "os": "OS X",
         "osVersion": "Monterey"

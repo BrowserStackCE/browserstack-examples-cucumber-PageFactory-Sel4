@@ -67,18 +67,16 @@ This repository contains the following Cucumber Scenario tests:
 - [BrowserStack](#browserstack)
 
 ---
-## Configuring the maximum parallel test threads for this repository
+## Configuring the maximum parallel test threads for this repository[SDK]
 
-For all the parallel run configuration profiles, tests will run with max parallels in your BrowserStack account, or you can configure the parallel test threads from the terminal
+For all the parallel run configuration profiles, tests will run with max parallels in your BrowserStack account, or you can configure the parallel test threads from the browserstack.yml file
 
-    "-DthreadCount=xx"
+    parallelsPerPlatform
     
 |BrowserStack| onPrem |
 |--|--|
 | browserstack/conf/Run_Single_Test/single.testng.xml|testng.xml
-browserstack/conf/Run_Parallel_Test/parallel.testng.xml |  |
-|browserstack/conf/Run_Local_Test/local.testng.xml|
-|browserstack/conf/Run_Parallel_Test/parallel.testng.xml
+browserstack/conf/Run_Parallel_Test/parallel.testng.xml |
 
 
 
@@ -142,11 +140,8 @@ This infrastructure points to running the tests on your own machine using any br
   set BROWSERSTACK_ACCESS_KEY=<browserstack-access-key>
   ```
 
-  Alternatively, you can also hardcode username and access_key objects in the respective json files:
-  - [single.conf.json](src/test/resources/browserstack/conf/Run_Single_Test/single.conf.json) file
-  - [parallel.conf.json](src/test/resources/browserstack/conf/Run_Parallel_Test/parallel.conf.json) file
-  - [local.conf.json](src/test/resources/browserstack/conf/Run_Local_Test/local.conf.json) file
-  - [local.parallel.json](src/test/resources/browserstack/conf/Run_Local_Parallel/local.parallel.json) file
+  Alternatively, you can also hardcode username and access_key objects in the respective file:
+  - [browserstack.yml](browserstack.yml) file
 
 
 Note:
@@ -158,7 +153,7 @@ Note:
 
 ### Run a specific test/entire test suite in parallel on a single BrowserStack browser
 
-In this section, we will run the tests in parallel on a single browser on Browserstack. Refer to [single.conf.json](src/test/resources/browserstack/conf/Run_Single_Test/single.conf.json) file to change test capabilities for this configuration.
+In this section, we will run the tests in parallel on a single browser on Browserstack. Refer to [browserstack.yml](browserstack.yml) file to change test capabilities for this configuration.
 
 - How to run the test?
 
@@ -178,13 +173,13 @@ In this section, we will run the tests in parallel on a single browser on Browse
   - Note: By default, this execution would run maximum test threads based on the parallel quota on your BrowserStack Account. Thread count can be configured as below based on your requirements.
   
    ```sh
-  mvn test -P scenario-bs "-Dcucumber.filter.tags=@regresssion" "-DthreadCount=3"
+  mvn test -P scenario-bs "-Dcucumber.filter.tags=@regresssion"
   ```
 
 
 ### Run the entire test suite in parallel on multiple BrowserStack browsers
 
-In this section, we will run the tests in parallel on multiple browsers on Browserstack. Refer to the [parallel.conf.json](src/test/resources/browserstack/conf/Run_Parallel_Test/parallel.conf.json) file to change test capabilities for this configuration.
+In this section, we will run the tests in parallel on multiple browsers on Browserstack. Refer to the [browserstack.yml](browserstack.yml) file to change test capabilities for this configuration.
 
 - How to run the test?
 
@@ -192,7 +187,7 @@ In this section, we will run the tests in parallel on multiple browsers on Brows
 
   Maven:
   ```sh
-  mvn test -P suite-cross-bs
+  mvn test -P scenario-bs
   ```
 
 	You can mention any scenario from the feature files using the `-Dcucumber.filter.tags`, tags defined at Feature level Eg. `@users` will run all the scenarios in the [Users Feature](src/test/resources/Features/Users.feature) file in parallel. Likewise `@regression` will run all the scenarios from all the Feature files in parallel across multiple browsers/devices.
@@ -206,7 +201,7 @@ In this section, we will run the tests in parallel on multiple browsers on Brows
   git clone https://github.com/browserstack/browserstack-demo-app
   ``` 
 - Please follow the README.md on the BrowserStack demo application repository to install and start the dev server on localhost.
-- In this section, we will run a single test case to test the BrowserStack Demo app hosted on your local machine i.e. localhost. Refer to the [local.conf.json](src/test/resources/browserstack/conf/Run_Local_Test/local.conf.json) file to change test capabilities for this configuration.
+- In this section, we will run a single test case to test the BrowserStack Demo app hosted on your local machine i.e. localhost. Refer to the [browserstack.yml](browserstack.yml) file to change test capabilities for this configuration.
 - Note: You may need to provide additional BrowserStackLocal arguments to successfully connect your localhost environment with BrowserStack infrastructure. (e.g if you are behind firewalls, proxy or VPN).
 - Further details for successfully creating a BrowserStackLocal connection can be found here:
 
@@ -234,7 +229,7 @@ You can mention any scenario from the feature files using the `-Dcucumber.filter
 
 ### [Web application hosted on internal environment] Run the entire test suite in parallel on multiple BrowserStack browser using BrowserStackLocal
 
-In this section, we will run the test cases to test the internally hosted website in parallel on multiple browsers/devices on Browserstack. Refer to the [local.parallel.json](src/test/resources/browserstack/conf/Run_Local_Parallel/local.parallel.json) file to change test capabilities for this configuration.
+In this section, we will run the test cases to test the internally hosted website in parallel on multiple browsers/devices on Browserstack. Refer to the [browserstack.yml](browserstack.yml) file to change test capabilities for this configuration.
 
 - How to run the test?
 
@@ -242,7 +237,7 @@ In this section, we will run the test cases to test the internally hosted websit
 
   Maven:
   ```sh
-  mvn test -P local-cross-bs
+  mvn test -P local-bs
   ```
 
 - Output
@@ -251,7 +246,7 @@ In this section, we will run the test cases to test the internally hosted websit
 
 - Note: By default, this execution would run maximum test threads based on the parallel quota on your BrowserStack Account. Thread count can be configured as below based on your requirements.
   ```sh
-  mvn test -P local-cross-bs "-Dcucumber.filter.tags=@e2e" "-DthreadCount=3"
+  mvn test -P local-bs "-Dcucumber.filter.tags=@e2e"
   ```
 
 

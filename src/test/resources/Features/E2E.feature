@@ -3,7 +3,7 @@
 #Description: Demonstrate Cucumber Java framework with BS Automate product
 @e2e @regression
 Feature: E2E Flow
-  Scenario Outline: Signed in User makes a Purchase for a product with Price and Vendor filters
+  Scenario Outline: TC-3294 Signed in User makes a Purchase for a product with Price and Vendor filters
     Given User is on home page
     When User clicks on sign in link
     And User enters <username> and <password> and clicks on sign in

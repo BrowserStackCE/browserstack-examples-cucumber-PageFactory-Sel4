@@ -21,7 +21,7 @@ public class BrowserstackTestStatusListener implements ITestListener {
     public void onTestSuccess(ITestResult result) {
         Object currentClass = result.getInstance();
         WebDriver driver = ((CucumberTest) currentClass).getDriver();
-        markTestStatus("passed", "", driver);
+        //markTestStatus("passed", "", driver);
         driver.quit();
     }
 
@@ -31,7 +31,7 @@ public class BrowserstackTestStatusListener implements ITestListener {
         WebDriver driver = ((CucumberTest) currentClass).getDriver();
         String message = result.getThrowable().getMessage();
         String reason = (message != null && message.length() > 254) ? message.substring(0, 254) : message;
-        markTestStatus("failed", reason.replaceAll("[^a-zA-Z0-9._-]", " "), driver);
+        //markTestStatus("failed", reason.replaceAll("[^a-zA-Z0-9._-]", " "), driver);
         driver.quit();
     }
 
