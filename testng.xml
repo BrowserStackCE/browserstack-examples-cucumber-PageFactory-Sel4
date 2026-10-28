@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="All Test Suite" parallel="tests">
+    <parameter name="config" value=""/>
+    <listeners>
+        <listener class-name="com.qa.util.SuiteAlterer"/>
+    </listeners>
+    <test verbose="1" preserve-order="true" name="CucumberTest">
+        <parameter name="config" value=""/>
+        <parameter name="environment" value=""/>
+        <classes>
+            <class name="Runner.CucumberTest"></class>
+        </classes>
+    </test>
+</suite>
